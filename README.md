@@ -26,13 +26,17 @@ sample-spring-security
                  ^
                  | 8080
                  |
-             +----------+
-             | IE浏览器 |
+             +--------+
+             | 浏览器 |
              +----------+
 </pre>
 
 密钥库
 ------
+
+密钥库文件已放入各自的工程中，并在pom.xml里进行了配置。您可跳过本节说明直接进入测试。
+
+下面说说密钥库文件里的内容。
 
 密钥库分两类，一类称为keyStore，另一类称为trustStore（即受信任的证书库）。keyStore里不仅有证书还有私有密钥，而trustStore里只有证书。
 
@@ -48,23 +52,25 @@ sample-spring-security
 
 我们既可以把上面三个war分别部署到三台物理机器上，也可部署到同一台机器上。下面按一台机情况加以说明。
 
-* 域名
-* 
-在.../etc/hosts文件中把上面三个域名都作为127.0.0.1的别名，即：
-
+<dl>
+<dt>设置域名</dt>
+<dd>在.../etc/hosts文件中把上面三个域名都作为127.0.0.1的别名，即：</dd>
+<pre>
 127.0.0.1  localhost  www.cas.com  www.apple.com  www.pear.com
+</pre>
 
-* 启动
-请打开三个DOS窗口分别进入各自的目录（pom.xml所在目录），然后分别启动。
+<dt>启动apple应用</dt>
+<dd>打开新的DOS命令窗口，进入apple工程的pom.xml所在目录，然后执行：<code>mvn tomcat7:run</code>。</dd>
 
-a) 启动apple和pear都请执行：mvn tomcat7:run
+<dt>启动pear应用</dt>
+<dd>打开新的DOS命令窗口，进入pear工程的pom.xml所在目录，然后执行：<code>mvn tomcat7:run</code>。</dd>
 
-b) 启动cas请执行：mvn tomcat7:run-war
-   （注：cas工程使用了Maven的War Overlay技术，tomcat7:run目前尚不完全支持该技术。）
+<dt>启动cas应用</dt>
+<dd>打开新的DOS命令窗口，进入cas工程的pom.xml所在目录，然后执行：<code>mvn tomcat7:run-war</code>。</dd>
 
-* 测试
-启动完成后打开IE浏览器，并输入：
-http://www.apple.com:8080/sss-apple/welcome
 
-然后在cas登录界面里输入wisetop/wisetop。
-�
+<dt>测试</dt>
+<dd>apple、pear和cas三个应用启动后请打开浏览器并输入：<code>http://www.apple.com:8080/sss-apple/welcome</code>。
+<br/>如果一切正常，浏览器将转向到cas登录界面，请在cas登录界面里输入用户名/密码（wisetop/wisetop）。</dd>
+</dl>
+
