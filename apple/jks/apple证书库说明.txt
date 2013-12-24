@@ -1,0 +1,173 @@
+我们已制作并配置好密钥库，无需调整。下面仅记录下当时的制作和配置过程。
+
+本文件夹里有两个密钥库文件，一个是apple.jks，另一个是trust.jks。
+
+以下说明操作过程，请注意下面的命令都要在当前路径执行才行。
+
+一、apple.jks
+我们已制作好了一个别名为apple、域名为www.apple.com自签发证书，并放入apple.jks密钥库文件中。
+
+这个证书是用JDK自带的keytool.exe来生成的，其操作过程如下：
+keytool -genkey -keystore apple.jks -alias apple -keyalg RSA
+输入keystore密码：changeit
+再次输入新密码: changeit
+您的名字与姓氏是什么？
+  [Unknown]：  www.apple.com
+您的组织单位名称是什么？
+  [Unknown]：  金蝶医疗研发中心
+您的组织名称是什么？
+  [Unknown]：  金蝶医疗科技有限公司
+您所在的城市或区域名称是什么？
+  [Unknown]：  广州
+您所在的州或省份名称是什么？
+  [Unknown]：  广东
+该单位的两字母国家代码是什么
+  [Unknown]：  CN
+CN=www.apple.com, OU=金蝶医疗研发中心, O=金蝶医疗科技有限公司, L=广州, ST=广东, C=CN 正确吗？
+  [否]：  y
+
+输入<apple>的主密码
+        （如果和 keystore 密码相同，按回车）：
+
+
+如果你想查看密钥库里证书的详细内容，可执行：
+keytool -keystore apple.jks -list -v -alias apple
+输入keystore密码：changeit
+别名名称： apple
+创建日期： 2012-11-30
+项类型: PrivateKeyEntry
+认证链长度： 1
+认证 [1]:
+所有者:CN=www.apple.com, OU=金蝶医疗研发中心, O=金蝶医疗科技有限公司, L=广州, ST=广东, C=CN
+签发人:CN=www.apple.com, OU=金蝶医疗研发中心, O=金蝶医疗科技有限公司, L=广州, ST=广东, C=CN
+序列号:50b8110a
+有效期: Fri Nov 30 09:51:06 CST 2012 至Thu Feb 28 09:51:06 CST 2013
+证书指纹:
+         MD5:0D:C2:10:CC:0E:32:11:F7:44:8A:5A:E7:3A:F0:F1:78
+         SHA1:7B:8E:32:FB:12:32:A6:A8:26:9A:D2:C9:E0:F0:47:73:B9:15:7C:DA
+         签名算法名称:SHA1withRSA
+         版本: 3
+
+
+如果要导出证书可执行：
+keytool -keystore apple.jks -alias apple -export -file r:\apple.crt
+输入keystore密码：changeit
+保存在文件中的认证 <r:\apple.crt>
+
+注意，别忘记在上面各命令中输入-keystore参数，否则keytool自动取默认密钥库文件（即%USERPROFILE%\.keystore文件）。
+
+二、trust.jks
+这是个受信任的密钥库，其中导入了www.cas.com那个证书，无需导入自己（www.apple.com）的证书。
+
+创建受信任的密钥库：
+由于我不知道如何能创建一个空库，因此先随便创建一个证书、再删除掉：
+keytool -keystore trust.jks -trustcacerts -genkey
+输入keystore密码：
+再次输入新密码:
+您的名字与姓氏是什么？
+  [Unknown]：  a
+您的组织单位名称是什么？
+  [Unknown]：  a
+您的组织名称是什么？
+  [Unknown]：  a
+您所在的城市或区域名称是什么？
+  [Unknown]：  a
+您所在的州或省份名称是什么？
+  [Unknown]：  a
+该单位的两字母国家代码是什么
+  [Unknown]：  a
+CN=a, OU=a, O=a, L=a, ST=a, C=a 正确吗？
+  [否]：  y
+
+输入<mykey>的主密码
+        （如果和 keystore 密码相同，按回车）：
+
+
+注意创建受信任的密钥库时要加上-trustcacerts参数。
+
+然后删除刚创建的那个没用的证书：
+keytool -keystore trust.jks -delete -alias mykey
+输入keystore密码：changeit
+
+
+至此我们创建了一个空的受信任的密钥库。下面我们导入www.cas.com证书：
+keytool -keystore trust.jks -import -file r:\cas.crt -alias cas
+输入keystore密码：changeit
+所有者:CN=www.cas.com, OU=金蝶医疗研发中心, O=金蝶医疗科技有限公司, L=广州, ST=广东, C=CN
+签发人:CN=www.cas.com, OU=金蝶医疗研发中心, O=金蝶医疗科技有限公司, L=广州, ST=广东, C=CN
+序列号:50b86cc8
+有效期: Fri Nov 30 16:22:32 CST 2012 至Thu Feb 28 16:22:32 CST 2013
+证书指纹:
+         MD5:D3:6B:F7:15:6B:49:44:FC:CE:A5:5B:56:15:42:51:80
+         SHA1:B3:09:3D:0A:CE:09:7B:FE:C4:90:6D:F7:67:E1:88:09:F4:63:B2:96
+         签名算法名称:SHA1withRSA
+         版本: 3
+信任这个认证？ [否]：  y
+认证已添加至keystore中
+
+
+最后检查一下trust.jks里有哪些证书：
+keytool -keystore trust.jks -list
+输入keystore密码：changeit
+
+Keystore 类型： JKS
+Keystore 提供者： SUN
+
+您的 keystore 包含 1 输入
+
+cas, 2012-11-30, trustedCertEntry,
+认证指纹 (MD5)： D3:6B:F7:15:6B:49:44:FC:CE:A5:5B:56:15:42:51:80
+
+二、在tomcat里配置密钥库。
+如果把本工程打成war包并放到tomcat里运行，需要修改conf\server.xml文件。（请补充）
+
+另外，开发时用命令行mvn tomcat7:run来启动比较方便，我们已在pom.xml做了相应修改，具体请见pom里的tomcat7-maven-plugin一段。
+
+三、从cas服务器获取pgt
+按cas 2.0协议，获取pgt是个可选的要求。但如果要获取到pgt则必须提供一个ssl/https协议的回调地址（callbackUrl）。
+为此我们在上面把tomcat配置为支持ssl/https访问方式，并提供了自己的证书。
+
+需要注意的是，我们还必须要把cas服务器的证书导入到自己的受信任密钥库中，
+同时还必须把自己的证书放到cas服务器上的受信任密钥库里，否则运行时似乎正常但取不到pgt。
+
+当尚未把本工程的证书放入cas服务器的受信任密钥库时，运行时cas服务器会抛异常：
+...
+javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+        at com.sun.net.ssl.internal.ssl.Alerts.getSSLException(Alerts.java:174)
+        ...
+Caused by: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilder
+Exception: unable to find valid certification path to requested target
+        at sun.security.validator.PKIXValidator.doBuild(PKIXValidator.java:323)
+        ...
+Caused by: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+        at sun.security.provider.certpath.SunCertPathBuilder.engineBuild(SunCertPathBuilder.java:174)
+        ...
+
+以及：
+org.jasig.cas.ticket.TicketCreationException: error.authentication.credentials.bad
+        at org.jasig.cas.CentralAuthenticationServiceImpl.delegateTicketGrantingTicket(CentralAuthenticationServiceImpl.java:290)
+        ...
+Caused by: error.authentication.credentials.bad
+        at org.jasig.cas.authentication.handler.BadCredentialsAuthenticationException.<clinit>(BadCredentialsAuthenticationException.java:25)
+        ...
+
+为验证本工程是否收到了pgt，我们可以在log4j.properties里设置为DEBUG运行模式。如果一切正常，从日志可看到xml输出：
+<cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'>
+        <cas:authenticationSuccess>
+                <cas:user>wisetop</cas:user>
+                <cas:proxyGrantingTicket>PGTIOU-3-OA7wohnaN0gO5W5fFKlb-cas</cas:proxyGrantingTicket>
+        </cas:authenticationSuccess>
+</cas:serviceResponse>
+这表明从cas服务器返回了pgt。
+
+如果我们尚未把自己的证书放入cas服务器的受信任密钥库中，则返回的xml里没有<cas:proxyGrantingTicket>节点，表示没收到pgt。
+
+四、其它说明
+与cas服务器不同，本工程不需要把自己的证书放到自己的受信任密钥库里。但如上所述，自己的证书也需要放入cas服务器的受信任密钥库里。
+
+五、常用命令：
+* 在命令行加上参数-Djavax.net.debug=all，或者把all改为ssl，则可看到相关的调试信息，有利于排错。例如：mvn tomcat7:run -Djavax.net.debug=ssl
+
+参考资料：
+* 打开ssl调试：
+http://stackoverflow.com/questions/9210514/unable-to-find-valid-certification-path-to-requested-target-error-even-after-c

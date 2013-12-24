@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:security="http://www.springframework.org/schema/security"
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+	<!-- 内置用户名和密码 -->
+	<beans profile="embedded">
+		<security:http auto-config="true">
+			<security:intercept-url pattern="/welcome*" access="ROLE_USER" />
+		</security:http>
+
+		<security:authentication-manager>
+			<security:authentication-provider>
+				<security:user-service>
+					<security:user name="kingdee" password="kingdee" authorities="ROLE_USER" />
+				</security:user-service>
+			</security:authentication-provider>
+		</security:authentication-manager>
+	</beans>
+
+	<!-- 用户保存在数据库里，并且密码为明文存储 -->
+	<beans profile="jdbc">
+		<security:http auto-config="true">
+			<security:intercept-url pattern="/welcome*" access="ROLE_USER" />
+		</security:http>
+
+		<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+				destroy-method="close">
+			<property name="driverClass" value="oracle.jdbc.driver.OracleDriver" />
+			<property name="jdbcUrl" value="jdbc:oracle:thin:@200.100.100.5:1521:rocee" />
+			<property name="user" value="wtp" />
+			<property name="password" value="wtp" />
+		</bean>
+
+		<security:authentication-manager>
+			<security:authentication-provider>
+				<security:jdbc-user-service
+					data-source-ref="dataSource"
+					users-by-username-query="SELECT femp_code AS username, fpassword AS password, '1' AS enabled FROM pv_employee where femp_code = ?"
+					authorities-by-username-query="SELECT femp_code as username, 'ROLE_USER' as authority FROM pv_employee WHERE femp_code = ?" />
+			</security:authentication-provider>
+		</security:authentication-manager>
+	</beans>
+
+	<!-- 通过CAS进行认证 -->
+	<!-- http://static.springsource.org/spring-security/site/docs/3.1.x/reference/cas.html -->
+	<beans profile="cas">
+		<bean id="serviceProperties" class="org.springframework.security.cas.ServiceProperties">
+			<property name="service" value="http://www.apple.com:8080/sss-apple/j_spring_cas_security_check" />
+			<property name="sendRenew" value="false" />
+		</bean>
+
+		<security:http entry-point-ref="casEntryPoint">
+			<security:intercept-url pattern="/welcome*" access="ROLE_USER" />
+			<security:custom-filter position="CAS_FILTER" ref="casFilter" />
+		</security:http>
+
+		<bean id="casFilter" class="org.springframework.security.cas.web.CasAuthenticationFilter">
+			<property name="authenticationManager" ref="authenticationManager" />
+			<property name="proxyGrantingTicketStorage" ref="pgtStorage" />
+			<property name="proxyReceptorUrl" value="j_spring_cas_security_proxyreceptor" />
+		</bean>
+
+		<bean id="casEntryPoint" class="org.springframework.security.cas.web.CasAuthenticationEntryPoint">
+			<property name="loginUrl" value="https://www.cas.com:9443/sss-cas/login" />
+			<property name="serviceProperties" ref="serviceProperties" />
+		</bean>
+
+		<security:authentication-manager alias="authenticationManager">
+			<security:authentication-provider ref="casAuthenticationProvider" />
+		</security:authentication-manager>
+
+		<bean id="casAuthenticationProvider" class="org.springframework.security.cas.authentication.CasAuthenticationProvider">
+			<property name="authenticationUserDetailsService">
+				<bean class="org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper">
+					<constructor-arg ref="userService" />
+				</bean>
+			</property>
+			<property name="serviceProperties" ref="serviceProperties" />
+			<property name="ticketValidator">
+				<bean class="org.jasig.cas.client.validation.Cas20ProxyTicketValidator">
+					<constructor-arg index="0" value="https://www.cas.com:9443/sss-cas" />
+					<property name="proxyCallbackUrl" value="https://www.apple.com:8443/sss-apple/j_spring_cas_security_proxyreceptor" />
+					<property name="proxyGrantingTicketStorage" ref="pgtStorage" />
+				</bean>
+			</property>
+			<property name="key" value="an_id_for_this_auth_only" />
+		</bean>
+
+		<!--
+			NOTE: In a real application you should not use an in memory implementation. You will also want
+					to ensure to clean up expired tickets by calling ProxyGrantingTicketStorage.cleanup()
+		-->
+		<bean id="pgtStorage" class="org.jasig.cas.client.proxy.ProxyGrantingTicketStorageImpl" />
+
+		<security:user-service id="userService">
+			<security:user name="wisetop" authorities="ROLE_USER" />
+		</security:user-service>
+
+		<bean id="dummyUserService" class="com.kingdee.apple.security.DummyAuthenticationUserDetailsService" />
+	</beans>
+
+</beans>

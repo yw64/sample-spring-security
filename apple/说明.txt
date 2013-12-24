@@ -1,0 +1,43 @@
+说明：
+本工程演示了三种用户认证的方式，分别是：
+* 在xml文件里书写用户名和密码。
+* 用户名和密码保存在数据库中。
+* 与cas集成。
+
+为做到分别演示的效果，本工程使用Spring 3.1的profile（档案）新功能，以上三种认证方式分别对应于名为embedded、jdbc和cas三个档案。
+
+1、启动
+本工程是个war工程，既可以在Eclipse里启动，也可以在命令行用mvn tomcat7:run启动。
+
+2、试运行
+启动后请新打开浏览器输入：http://www.apple.com:8080/sss-apple/welcome，浏览器将被重定向到登录界面，
+在登录界面里输入kingdee/kingdee，登录成功后将返回到我们刚才输入的welcome页面。
+
+由于HellowController把welcome映射到了hello.jsp，因此您看到的是后者的内容。
+
+2、选择认证方式
+在spring-security.xml里我们定义了 三个档案，分别是embedded、jdbc和cas。
+默认地（即未修改任何文件时）本工程将激活embedded档案，要想换一个档案运行请编辑web.xml文件。
+
+由于我们在log4j.properties中打开了org.springframework.web.context.support.StandardServletEnvironment的DEBUG，
+因此在输出日志里我们能通过查找“Activating profile”字符串来检查运行时激活的是哪个档案。
+
+* embedded档案
+直接在xml里写用户名和密码。这里我们定义了kingdee/kingdee的用户名/密码。
+
+* jdbc档案
+用户名和密码保存在数据库中。需要输入数据库职工表里的用户名和密码，例如0631/14700。
+
+* cas档案
+与cas集成。要另外手工启动cas服务器和pear服务器才行，具体请参见“整体说明.txt”。
+
+由于在spring-security.xml里我们指定了本地用户名为wisetop，因此请在cas服务器里配置一个名为wisetop用户名。
+同样要注意的是，在spring-security.xml里我们指定了cas服务器域名为www.cas.com、端口为9443。
+
+由于我们在本地只配置了wisetop一个用户，因此如果在cas登录界面里即使输入并认证通过了其它的用户名，返回到本工程时Spring Security仍会报错。
+换句话说，在cas服务器上的用户名必须与应用系统本地的用户名相同。
+
+与cas集成需要有证书和证书库，具体请参见jks文件夹。
+
+参考资料：
+1、http://www.mkyong.com/spring-security/spring-security-hello-world-example/

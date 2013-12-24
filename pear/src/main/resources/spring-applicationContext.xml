@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="GBK" ?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns="http://www.springframework.org/schema/beans"
+		xmlns:jaxws="http://cxf.apache.org/jaxws"
+		xsi:schemaLocation="
+				http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+				http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
+
+	<!-- 导入cxf -->
+	<import resource="classpath:META-INF/cxf/cxf.xml"/>
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml"/>
+
+	<!-- 定义服务bean -->
+	<bean id="pearService" class="com.kingdee.pear.cxf.service.PearServiceImpl">
+	</bean>
+
+	<!-- 发布服务 -->
+	<jaxws:endpoint
+			id="cxf.pearService"
+			implementor="#pearService"
+			address="/PearService">
+	</jaxws:endpoint>
+
+</beans>
