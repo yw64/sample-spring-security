@@ -28,7 +28,7 @@ sample-spring-security
                  |
              +--------+
              | 浏览器 |
-             +----------+
+             +--------+
 </pre>
 
 密钥库
@@ -54,7 +54,7 @@ sample-spring-security
 
 <dl>
 <dt>设置域名</dt>
-<dd>在.../etc/hosts文件中把上面三个域名都作为127.0.0.1的别名，即：</dd>
+<dd>在.../etc/hosts文件中把上面三个域名都设置为127.0.0.1的别名，即：</dd>
 <pre>
 127.0.0.1  localhost  www.cas.com  www.apple.com  www.pear.com
 </pre>
@@ -70,7 +70,7 @@ sample-spring-security
 
 
 <dt>测试</dt>
-<dd>apple、pear和cas三个应用启动后请打开浏览器并输入：<code>http://www.apple.com:8080/sss-apple/welcome</code>。
-<br/>如果一切正常，浏览器将转向到cas登录界面，请在cas登录界面里输入用户名/密码（wisetop/wisetop）。</dd>
+<dd>当apple、pear和cas三个应用启动后请打开浏览器并输入：<code>http://www.apple.com:8080/sss-apple/welcome</code>。
+<br/>如果一切正常，浏览器将转向到cas登录界面，请在cas登录界面里输入用户名/密码：wisetop/wisetop。</dd>
 </dl>
 
